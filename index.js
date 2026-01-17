@@ -94,12 +94,19 @@ function renderFailureSvg(reason) {
 
 function sendFailure(res, reason, statusCode = 413) {
   const svg = renderFailureSvg(reason);
-  res.writeHead(statusCode, {
+  res.writeHead(statusCode, withDefaultHeaders({
     'Content-Type': 'image/svg+xml; charset=utf-8',
     'Cache-Control': 'no-store',
     'Content-Length': Buffer.byteLength(svg)
-  });
+  }));
   res.end(svg);
+}
+
+function withDefaultHeaders(headers = {}) {
+  return {
+    'Strict-Transport-Security': 'max-age=0',
+    ...headers
+  };
 }
 
 function cacheKeyFromPath(requestPath) {
@@ -167,11 +174,11 @@ function serveCached(cacheFile, res) {
 
   try {
     const stats = fs.statSync(cacheFile);
-    res.writeHead(200, {
+    res.writeHead(200, withDefaultHeaders({
       'Content-Type': metadata.contentType || 'application/octet-stream',
       'Content-Length': stats.size,
       'Cache-Control': 'public, max-age=86400'
-    });
+    }));
 
     fs.utimesSync(cacheFile, new Date(), new Date());
     fs.createReadStream(cacheFile).pipe(res);
@@ -183,13 +190,13 @@ function serveCached(cacheFile, res) {
 
 function proxyRequest(req, res) {
   if (req.method !== 'GET') {
-    res.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.writeHead(405, withDefaultHeaders({ 'Content-Type': 'text/plain; charset=utf-8' }));
     res.end('Only GET supported');
     return;
   }
 
   if (req.url === '/' || req.url === '') {
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.writeHead(200, withDefaultHeaders({ 'Content-Type': 'text/plain; charset=utf-8' }));
     res.end('FineImgur relay is running.');
     return;
   }
@@ -281,11 +288,11 @@ function proxyRequest(req, res) {
       enforceCacheLimit();
 
       const stats = fs.statSync(cacheFile);
-      res.writeHead(200, {
+      res.writeHead(200, withDefaultHeaders({
         'Content-Type': contentType,
         'Content-Length': stats.size,
         'Cache-Control': 'public, max-age=86400'
-      });
+      }));
       fs.createReadStream(cacheFile).pipe(res);
     });
 
