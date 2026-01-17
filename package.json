@@ -1,0 +1,16 @@
+{
+  "name": "fineimgur",
+  "version": "1.0.0",
+  "description": "Relay Imgur image requests with caching and size limits.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "imgur",
+    "proxy",
+    "cache"
+  ],
+  "license": "MIT"
+}
